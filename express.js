@@ -2,7 +2,7 @@ var express = require("express");
 let app = express();
 const cors = require("cors");
 app.use(cors({
-  origin: 'https://sheisdumz.github.io/', // Adjust according to your Vue app URL
+  origin: 'https://sheisdumz.github.io', // Adjust according to your Vue app URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type'],
 }));
