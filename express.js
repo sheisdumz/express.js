@@ -1,7 +1,11 @@
 var express = require("express");
 let app = express();
 const cors = require("cors");
-app.use(cors());
+app.use(cors({
+  origin: 'https://sheisdumz.github.io/', // Adjust according to your Vue app URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+}));
 app.use(express.json());
 app.set('json spaces', 3);
 const path = require('path');
