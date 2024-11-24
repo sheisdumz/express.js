@@ -98,7 +98,7 @@ app.post('/collections/orders', async function (req, res, next) {
 });
 
 // Endpoint to update product availability
-app.put('/collections/products/update-availability', async function (req, res) {
+app.put('/collections/products/updateSpace', async function (req, res) {
   try {
     const { products } = req.body; // Extract product data from request body
 
