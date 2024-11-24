@@ -11,32 +11,35 @@ let propertiesPath = path.resolve(__dirname, "./dbconnection.properties");
 let properties = PropertiesReader(propertiesPath);
 
 // Extract values from the properties file
-const dbPrefix = properties.get('db.prefix');
-const dbHost = properties.get('db.host');
-const dbName = properties.get('db.name');
+const dbPrefix = properties.get('db.prefix');   // Should be 'mongodb+srv://'
 const dbUser = properties.get('db.user');
 const dbPassword = properties.get('db.password');
-const dbParams = properties.get('db.params');
+const dbHost = properties.get('db.host');       // This should be the cluster URL (e.g., cluster0.goepg.mongodb.net)
+const dbName = properties.get('db.name');       // Database name (e.g., 'website')
+const dbParams = properties.get('db.params');   // Any query params like 'retryWrites=true&w=majority'
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-// MongoDB connection URL
-const uri = `${dbPrefix}${dbUser}:${dbPassword}${dbHost}${dbParams}`;
+// Correctly format the MongoDB URI
+const uri = `${dbPrefix}${dbUser}:${dbPassword}@${dbHost}/${dbName}?${dbParams}`;
+
+// Import MongoDB client
+const { MongoClient, ServerApiVersion } = require("mongodb");
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 
-let db1;//declare variable
+let db1; // Declare variable
 
+// Function to connect to the MongoDB database
 async function connectDB() {
   try {
-    client.connect();
+    await client.connect();  // Use await here
     console.log('Connected to MongoDB');
-    db1 = client.db('website');
+    db1 = client.db(dbName);  // Connect to the specific database
   } catch (err) {
     console.error('MongoDB connection error:', err);
   }
 }
 
-connectDB(); //call the connectDB function to connect to MongoDB database
+connectDB();
 
 //Optional if you want the get the collection name from the Fetch API in test3.html then
 app.param('collectionName', async function(req, res, next, collectionName) { 
@@ -48,27 +51,19 @@ app.param('collectionName', async function(req, res, next, collectionName) {
 
 // Ensure this route is defined after the middleware app.param
 // get all data from our collection in Mongodb
-app.get('/collections/:collectionName', async function(req, res, next) {
-    
-});
-
-app.get('/collections1/:collectionName', async function(req, res, next) {
- 
-});
-
-app.get('/collections/:collectionName/:max/:sortAspect/:sortAscDesc', async function(req, res, next){
-    
-});
-
-app.get('/collections/:collectionName/:id' , async function(req, res, next) {
-    
+// Endpoint to fetch all products from the "Products" collection
+app.get('/collections/courses', async function (req, res, next) {
+  try {
+    const results = await db1.collection('courses').find({}).toArray(); // Fetch all documents
+    console.log('Retrieved data:', results); // Log retrieved data
+    res.json(results); // Send the data as a JSON response
+  } catch (err) {
+    console.error('Error fetching docs', err.message); // Log errors
+    res.status(500).json({ error: 'Failed to fetch products' }); // Return error response
+  }
 });
 
 app.post('/collections/:collectionName', async function(req, res, next) {
-    
-});
-
-app.delete('/collections/:collectionName/:id', async function(req, res, next) {
     
 });
 
