@@ -27,10 +27,15 @@ const uri = `${dbPrefix}${dbUser}:${dbPassword}@${dbHost}/${dbName}?${dbParams}`
 
 // Import MongoDB client
 const { MongoClient, ServerApiVersion } = require("mongodb");
+
+let db1; // Declare variable
+
+app.use(express.static(path.join(__dirname)));
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 
-let db1; // Declare variable
+
 
 // Function to connect to the MongoDB database
 async function connectDB() {
@@ -138,7 +143,7 @@ app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
     res.status(500).json({ error: 'An error occurred' });
 });
-app.use(express.static(path.join(__dirname)));
+
 
 
 // Start the server
