@@ -96,7 +96,6 @@ app.post('/collections/orders', async function (req, res, next) {
 
     res.status(201).json({
       message: 'Order created successfully',
-      orderId: results.insertedId // Return the inserted order's ID
     });
   } catch (err) {
     console.error('Error creating order:', err.message); // Log errors
@@ -147,14 +146,15 @@ app.get('/collections/courses/search', async function (req, res) {
 
     // Build search query
     const query = search
-      ? {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { location: { $regex: search, $options: 'i' } }
-          ]
-        }
-      : {};
+    ? {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { location: { $regex: search, $options: 'i' } },
+          { subject: { $regex: search, $options: 'i' } }
+        ]
+      }
+    : {};
 
     const sortOptions = { [sortKey]: sortOrder === 'asc' ? 1 : -1 }; // Determine sort order
 
