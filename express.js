@@ -1,6 +1,13 @@
-var express = require("express");
-let app = express();
+const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const PropertiesReader = require("properties-reader");
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const bodyParser = require("body-parser");
+
+let app = express();
+
+// CORS Configuration
 const corsOptions = {
   origin: 'https://sheisdumz.github.io', // Adjust according to your Vue app URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -9,9 +16,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(bodyParser.json()); // Add this line to parse JSON request bodies
 app.set('json spaces', 3);
-const path = require('path');
-let PropertiesReader = require("properties-reader");
+
 // Load properties from the file
 let propertiesPath = path.resolve(__dirname, "./dbconnection.properties");
 let properties = PropertiesReader(propertiesPath);
@@ -27,17 +34,11 @@ const dbParams = properties.get('db.params');   // Any query params like 'retryW
 // Correctly format the MongoDB URI
 const uri = `${dbPrefix}${dbUser}:${dbPassword}@${dbHost}/${dbName}?${dbParams}`;
 
-// Import MongoDB client
-const { MongoClient, ServerApiVersion } = require("mongodb");
-
-let db1; // Declare variable
-
-app.use(express.static(path.join(__dirname)));
+// Declare variable for database
+let db1;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
-
-
 
 // Function to connect to the MongoDB database
 async function connectDB() {
@@ -52,16 +53,16 @@ async function connectDB() {
 
 connectDB();
 
-//Optional if you want the get the collection name from the Fetch API in test3.html then
+// Serve static files
+app.use(express.static(path.join(__dirname)));
+
+// Middleware to set collection
 app.param('collectionName', async function(req, res, next, collectionName) { 
-    req.collection = db1.collection(collectionName);
-    /*Check the collection name for debugging if error */
-    console.log('Middleware set collection:', req.collection.collectionName);
-    next();
+  req.collection = db1.collection(collectionName);
+  console.log('Middleware set collection:', req.collection.collectionName);
+  next();
 });
 
-// Ensure this route is defined after the middleware app.param
-// get all data from our collection in Mongodb
 // Endpoint to fetch all products from the "Products" collection
 app.get('/collections/courses', async function (req, res, next) {
   try {
@@ -74,36 +75,35 @@ app.get('/collections/courses', async function (req, res, next) {
   }
 });
 
+// Endpoint to create an order
 app.post('/collections/orders', async function (req, res, next) {
   try {
-      console.log('Request body:', req.body); // Add this line to log the request body
-      const { name, phone, courses } = req.body;
+    console.log('Request body:', req.body); // Add this line to log the request body
+    const { name, phone, courses } = req.body;
 
-      // Validate request body
-      if (!name || !phone || !courses || !Array.isArray(courses)) {
-          return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
-      }
+    // Validate request body
+    if (!name || !phone || !courses || !Array.isArray(courses)) {
+      return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
+    }
 
-      // Create an order object
-      const order = {
-          name,
-          phone,
-          courses,
-      };
+    // Create an order object
+    const order = {
+      name,
+      phone,
+      courses,
+    };
 
-      // Insert the order into the "Orders" collection
-      const results = await db1.collection('Orders').insertOne(order);
+    // Insert the order into the "Orders" collection
+    const results = await db1.collection('Orders').insertOne(order);
 
-      res.status(201).json({
-          message: 'Order created successfully',
-      });
+    res.status(201).json({
+      message: 'Order created successfully',
+    });
   } catch (err) {
-      console.error('Error creating order:', err.message);
-      res.status(500).json({ error: 'Failed to create order' });
+    console.error('Error creating order:', err.message);
+    res.status(500).json({ error: 'Failed to create order' });
   }
 });
-
-
 
 // Endpoint to update product availability
 app.put('/collections/products/updateSpace', async function (req, res) {
@@ -148,15 +148,15 @@ app.get('/collections/courses/search', async function (req, res) {
 
     // Build search query
     const query = search
-    ? {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { location: { $regex: search, $options: 'i' } },
-          { subject: { $regex: search, $options: 'i' } }
-        ]
-      }
-    : {};
+      ? {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { location: { $regex: search, $options: 'i' } },
+            { subject: { $regex: search, $options: 'i' } }
+          ]
+        }
+      : {};
 
     const sortOptions = { [sortKey]: sortOrder === 'asc' ? 1 : -1 }; // Determine sort order
 
@@ -170,17 +170,13 @@ app.get('/collections/courses/search', async function (req, res) {
   }
 });
 
-
-
-
+// Global error handler
 app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
-    res.status(500).json({ error: 'An error occurred' });
+  console.error('Global error handler:', err);
+  res.status(500).json({ error: 'An error occurred' });
 });
-
-
 
 // Start the server
 app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
+  console.log('Server is running on port 3000');
+});
