@@ -75,22 +75,18 @@ app.get('/collections/courses', async function (req, res, next) {
 // Endpoint to create a new order
 app.post('/collections/orders', async function (req, res, next) {
   try {
-    const { orderId, name, surname, phone, totalPrice, courses } = req.body; // Extract request data
+    const {name, phone, courses } = req.body; // Extract request data
 
     // Validate request body
-    if (!orderId || !name || !surname || !phone || !totalPrice || !courses || !Array.isArray(courses)) {
+    if (!name || !phone || !courses || !Array.isArray(courses)) {
       return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
     }
 
     // Create an order object
     const order = {
-      orderId,
       name,
-      surname,
       phone,
-      totalPrice,
       courses,
-      createdAt: new Date()
     };
 
     // Insert the order into the "Orders" collection
@@ -109,26 +105,26 @@ app.post('/collections/orders', async function (req, res, next) {
 // Endpoint to update product availability
 app.put('/collections/products/updateSpace', async function (req, res) {
   try {
-    const { products } = req.body; // Extract product data from request body
+    const { lessons } = req.body; // Extract product data from request body
 
     // Validate the request body
-    if (!products || !Array.isArray(products)) {
+    if (!lessons || !Array.isArray(lessons)) {
       return res.status(400).json({ error: 'Invalid or missing products data' });
     }
 
     // Update availability for each product
-    for (const product of products) {
-      if (!product.title || !product.quantity) {
+    for (const lesson of lessons) {
+      if (!lesson.title || !lesson.quantity) {
         return res.status(400).json({ error: 'Each product must have a title and quantity' });
       }
 
-      const result = await db1.collection('Products').updateOne(
-        { title: product.title },
-        { $inc: { availableInventory: -product.quantity } }
+      const result = await db1.collection('courses').updateOne(
+        { title: lesson.title },
+        { $inc: { spaces: -lesson.quantity } }
       );
 
       if (result.matchedCount === 0) {
-        console.warn(`Product with title "${product.title}" not found`); // Warn if product not found
+        console.warn(`Lesson with title "${lesson.title}" not found`); // Warn if product not found
       }
     }
 
@@ -138,6 +134,40 @@ app.put('/collections/products/updateSpace', async function (req, res) {
     res.status(500).json({ error: 'Failed to update product availability' });
   }
 });
+
+// Endpoint to search for products
+app.get('/collections/courses/search', async function (req, res) {
+  try {
+    const { search = '', sortKey = 'title', sortOrder = 'asc' } = req.query; // Extract query params
+
+    console.log('Search Query:', search); // Log search query
+    console.log('Sort Key:', sortKey, 'Sort Order:', sortOrder); // Log sorting options
+
+    // Build search query
+    const query = search
+      ? {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { location: { $regex: search, $options: 'i' } }
+          ]
+        }
+      : {};
+
+    const sortOptions = { [sortKey]: sortOrder === 'asc' ? 1 : -1 }; // Determine sort order
+
+    const results = await db1.collection('courses').find(query).sort(sortOptions).toArray();
+
+    console.log('Search Results:', results); // Log search results
+    res.status(200).json(results); // Return results to frontend
+  } catch (err) {
+    console.error('Error fetching products:', err.message); // Log errors
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
+
+
 
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
