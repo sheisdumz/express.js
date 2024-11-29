@@ -76,7 +76,7 @@ app.get('/collections/courses', async function (req, res, next) {
 });
 
 // Endpoint to create an order
-app.post('/collections/orders', async function (req, res, next) {
+app.post('/collections/Orders', async function (req, res, next) {
   try {
     console.log('Request body:', req.body); // Add this line to log the request body
     const { name, phone, courses } = req.body;
