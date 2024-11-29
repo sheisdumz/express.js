@@ -78,7 +78,8 @@ app.get('/collections/courses', async function (req, res, next) {
 // Endpoint to create an order
 app.post('/collections/Orders', async function (req, res, next) {
   try {
-    console.log('Request body:', req.body); // Add this line to log the request body
+    console.log('Request body:', req.body);
+
     const { name, phone, courses } = req.body;
 
     // Validate request body
@@ -86,15 +87,25 @@ app.post('/collections/Orders', async function (req, res, next) {
       return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
     }
 
-    // Create an order object
+    // Enforce correct data format for courses
+    const sanitizedLessons = lessons.map(lesson => ({
+      id: Number(lesson.id), // Ensure id is a number
+      count: Number(lesson.count), // Ensure count is a number
+    }));
+
+    // Create the order object
     const order = {
       name,
       phone,
-      courses,
+      courses: sanitizedLessons,
     };
 
+    console.log('Order object before insert:', order);
+
     // Insert the order into the "Orders" collection
-    const results = await db1.collection('Orders').insertOne(order);
+    const result = await db1.collection('Orders').insertOne(order);
+
+    console.log('Database insert result:', result);
 
     res.status(201).json({
       message: 'Order created successfully',
@@ -104,7 +115,6 @@ app.post('/collections/Orders', async function (req, res, next) {
     res.status(500).json({ error: 'Failed to create order' });
   }
 });
-
 // Endpoint to update product availability
 app.put('/collections/products/updateSpace', async function (req, res) {
   try {
