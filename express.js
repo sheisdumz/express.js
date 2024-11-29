@@ -77,31 +77,33 @@ app.get('/collections/courses', async function (req, res, next) {
 // Endpoint to create a new order
 app.post('/collections/orders', async function (req, res, next) {
   try {
-    const {name, phone, courses } = req.body; // Extract request data
+      const { name, phone, courses } = req.body;
 
-    // Validate request body
-    if (!name || !phone || !courses || !Array.isArray(courses)) {
-      return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
-    }
+      // Validate request body
+      if (!name || !phone || !courses || !Array.isArray(courses)) {
+          return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
+      }
 
-    // Create an order object
-    const order = {
-      name,
-      phone,
-      courses,
-    };
+      // Create an order object
+      const order = {
+          name,
+          phone,
+          courses,
+          
+      };
 
-    // Insert the order into the "Orders" collection
-    const results = await db1.collection('Orders').insertOne(order);
+      // Insert the order into the "Orders" collection
+      const results = await db1.collection('Orders').insertOne(order);
 
-    res.status(201).json({
-      message: 'Order created successfully',
-    });
+      res.status(201).json({
+          message: 'Order created successfully',
+      });
   } catch (err) {
-    console.error('Error creating order:', err.message); // Log errors
-    res.status(500).json({ error: 'Failed to create order' }); // Return error response
+      console.error('Error creating order:', err.message);
+      res.status(500).json({ error: 'Failed to create order' });
   }
 });
+
 
 // Endpoint to update product availability
 app.put('/collections/products/updateSpace', async function (req, res) {
