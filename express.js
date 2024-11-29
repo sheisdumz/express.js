@@ -74,9 +74,9 @@ app.get('/collections/courses', async function (req, res, next) {
   }
 });
 
-// Endpoint to create a new order
 app.post('/collections/orders', async function (req, res, next) {
   try {
+      console.log('Request body:', req.body); // Add this line to log the request body
       const { name, phone, courses } = req.body;
 
       // Validate request body
@@ -89,7 +89,6 @@ app.post('/collections/orders', async function (req, res, next) {
           name,
           phone,
           courses,
-          
       };
 
       // Insert the order into the "Orders" collection
@@ -103,6 +102,7 @@ app.post('/collections/orders', async function (req, res, next) {
       res.status(500).json({ error: 'Failed to create order' });
   }
 });
+
 
 
 // Endpoint to update product availability
