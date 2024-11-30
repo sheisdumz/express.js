@@ -75,7 +75,7 @@ app.get('/collections/courses', async function (req, res, next) {
   }
 });
 
-// Endpoint to create an order
+/// Endpoint to create an order
 app.post('/collections/Orders', async function (req, res, next) {
   try {
     console.log('Request body:', req.body);
@@ -84,35 +84,42 @@ app.post('/collections/Orders', async function (req, res, next) {
 
     // Validate request body
     if (!name || !phone || !courses || !Array.isArray(courses)) {
-      return res.status(400).json({ error: 'Invalid or missing fields in the request body' });
+      return res.status(400).json({ error: "Invalid or missing fields in the request body" });
     }
 
-    // Enforce correct data format for courses
-    const sanitizedLessons = lessons.map(lesson => ({
-      id: Number(lesson.id), // Ensure id is a number
-      count: Number(lesson.count), // Ensure count is a number
-    }));
+    // Transform the courses array to the desired format
+    const transformedCourses = courses.reduce((acc, course) => {
+      // Ensure course has valid properties
+      if (course.id && typeof course.id === 'number') {
+        const existingCourse = acc.find(item => item.id === course.id);
+        if (existingCourse) {
+          existingCourse.count += 1; // Increment count if the course exists
+        } else {
+          acc.push({ id: course.id, count: 1 }); // Add a new course with count = 1
+        }
+      }
+      return acc;
+    }, []);
 
-    // Create the order object
+    // Create an order object in the desired format
     const order = {
       name,
       phone,
-      courses: sanitizedLessons,
+      courses: transformedCourses,
     };
 
-    console.log('Order object before insert:', order);
-
-    // Insert the order into the "Orders" collection
+    // Insert the order into MongoDB
     const result = await db1.collection('Orders').insertOne(order);
 
-    console.log('Database insert result:', result);
-
+    // Respond with success message and inserted ID
     res.status(201).json({
-      message: 'Order created successfully',
+      message: "Order created successfully",
+      orderId: result.insertedId,
     });
+
   } catch (err) {
-    console.error('Error creating order:', err.message);
-    res.status(500).json({ error: 'Failed to create order' });
+    console.error("Error creating order:", err.message);
+    next(err); // Pass the error to the next middleware
   }
 });
 // Endpoint to update product availability
