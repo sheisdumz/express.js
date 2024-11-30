@@ -88,7 +88,7 @@ app.post('/collections/Orders', async function (req, res, next) {
     }
 
     // Transform the courses array to the desired format
-    const transformedCourses = courses.reduce((acc, course) => {
+    const validatedCourses = courses.reduce((acc, course) => {
       // Ensure course has valid properties
       if (course.id && typeof course.id === 'number') {
         const existingCourse = acc.find(item => item.id === course.id);
@@ -105,7 +105,7 @@ app.post('/collections/Orders', async function (req, res, next) {
     const order = {
       name,
       phone,
-      courses: transformedCourses,
+      courses: validatedCourses,
     };
 
     // Insert the order into MongoDB
