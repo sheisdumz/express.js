@@ -9,10 +9,10 @@ let app = express();
 
 // CORS Configuration
 const corsOptions = {
-  origin: 'https://sheisdumz.github.io', // Adjust according to your Vue app URL
+  origin: 'https://sheisdumz.github.io', // Ad
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'], // Allow other headers like 'Authorization' if needed
-  credentials: true,  // Allow credentials (cookies, HTTP authentication) if necessary
+  credentials: true,  // Allow credentials (cookies, HTTP authentication) 
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -27,9 +27,9 @@ let properties = PropertiesReader(propertiesPath);
 const dbPrefix = properties.get('db.prefix');   // Should be 'mongodb+srv://'
 const dbUser = properties.get('db.user');
 const dbPassword = properties.get('db.password');
-const dbHost = properties.get('db.host');       // This should be the cluster URL (e.g., cluster0.goepg.mongodb.net)
-const dbName = properties.get('db.name');       // Database name (e.g., 'website')
-const dbParams = properties.get('db.params');   // Any query params like 'retryWrites=true&w=majority'
+const dbHost = properties.get('db.host');      
+const dbName = properties.get('db.name');       
+const dbParams = properties.get('db.params');   
 
 // Correctly format the MongoDB URI
 const uri = `${dbPrefix}${dbUser}:${dbPassword}@${dbHost}/${dbName}?${dbParams}`;
@@ -123,7 +123,7 @@ app.post('/collections/Orders', async function (req, res, next) {
   }
 });
 // Endpoint to update product availability
-app.put('/collections/products/updateSpace', async function (req, res) {
+app.put('/collections/products', async function (req, res) {
   try {
     const { lessons } = req.body; // Extract product data from request body
 
